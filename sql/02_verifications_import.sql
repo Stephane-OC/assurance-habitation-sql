@@ -22,7 +22,7 @@ FROM region;
 --
 -- INSERT IGNORE permet d'éviter une erreur si la requête est rejouée
 -- ============================================================
-
+ 
 INSERT IGNORE INTO region (
     Code_dep_code_commune,
     reg_code,

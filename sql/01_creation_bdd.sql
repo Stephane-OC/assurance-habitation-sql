@@ -69,7 +69,7 @@ CREATE TABLE contrat (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
-
+ 
 -- ============================================================
 -- Étape suivante dans MySQL Workbench :
 -- 1. Importer Region.csv dans la table region

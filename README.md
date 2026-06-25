@@ -137,7 +137,7 @@ This query lists contract IDs and housing surfaces for contracts located in post
 
 ## Screenshots
 
-The `captures/` folder contains screenshots of the SQL queries executed in MySQL Workbench.
+The `screenshots/` folder contains screenshots of the SQL queries executed in MySQL Workbench.
 
 Each screenshot shows:
 
