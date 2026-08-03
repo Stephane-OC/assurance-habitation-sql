@@ -119,16 +119,17 @@ ORDER BY c.Contrat_ID;
 
 -- Requête 9 :
 -- Quelle est la surface moyenne des contrats à Paris ?
--- Ici, Paris est identifié par la commune "PARIS".
+-- Paris est identifié par le code département 75.
 
 SELECT
-    r.com_nom_maj_court AS commune,
+    r.dep_code,
+    r.dep_nom,
     ROUND(AVG(c.Surface), 2) AS surface_moyenne
 FROM contrat c
 INNER JOIN region r
     ON c.Code_dep_code_commune = r.Code_dep_code_commune
-WHERE r.com_nom_maj_court = 'PARIS'
-GROUP BY r.com_nom_maj_court;
+WHERE r.dep_code = '75'
+GROUP BY r.dep_code, r.dep_nom;
 
 -- Requête 10 :
 -- Classement des 10 départements où le prix moyen de la cotisation
