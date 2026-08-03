@@ -221,4 +221,4 @@ GROUP BY
     r.dep_nom,
     r.reg_nom
 ORDER BY nombre_contrats DESC
-LIMIT 10; 
+LIMIT 10;

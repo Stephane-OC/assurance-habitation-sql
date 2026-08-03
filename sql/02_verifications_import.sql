@@ -187,7 +187,7 @@ WHERE dep_code = '974';
 
 
 -- ============================================================
--- 9. Aperçu rapide des données importées
+-- 9. Aperçu rapide des données importées 
 -- ============================================================
 
 SELECT *
