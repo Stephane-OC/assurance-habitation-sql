@@ -11,7 +11,7 @@ COLLATE utf8mb4_unicode_ci;
 
 USE oc_assurance_habitation;
 
--- On supprime d'abord la table enfant, puis la table parent.
+-- On supprime d'abord la table enfant, puis la table parent
 DROP TABLE IF EXISTS contrat;
 DROP TABLE IF EXISTS region;
 
@@ -30,7 +30,8 @@ CREATE TABLE region (
     dep_code VARCHAR(3) NOT NULL,
     dep_nom_num VARCHAR(80) NOT NULL,
 
-    CONSTRAINT pk_region PRIMARY KEY (Code_dep_code_commune)
+    CONSTRAINT pk_region
+        PRIMARY KEY (Code_dep_code_commune)
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
@@ -38,11 +39,6 @@ COLLATE=utf8mb4_unicode_ci;
 -- ============================================================
 -- Table CONTRAT
 -- Données des contrats d'assurance habitation
--- ============================================================
--- Remarque importante :
--- No_voie est en VARCHAR(10), et non en INT, car il s'agit d'une
--- donnée d'adresse. Certaines valeurs peuvent être absentes ou
--- difficiles à importer proprement sous forme numérique.
 -- ============================================================
 
 CREATE TABLE contrat (
@@ -61,7 +57,8 @@ CREATE TABLE contrat (
     Valeur_declaree_biens VARCHAR(30) NOT NULL,
     Prix_cotisation_mensuel DECIMAL(10,2) NOT NULL,
 
-    CONSTRAINT pk_contrat PRIMARY KEY (Contrat_ID),
+    CONSTRAINT pk_contrat
+        PRIMARY KEY (Contrat_ID),
 
     CONSTRAINT fk_contrat_region
         FOREIGN KEY (Code_dep_code_commune)
@@ -69,12 +66,13 @@ CREATE TABLE contrat (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
- 
+
 -- ============================================================
--- Étape suivante dans MySQL Workbench :
+-- Ordre des étapes suivantes dans MySQL Workbench :
+--
 -- 1. Importer Region.csv dans la table region
--- 2. Exécuter le fichier 02_verifications_import.sql jusqu'au bloc
---    d'ajout des communes techniques de La Réunion
+-- 2. Exécuter 02_normalisation_encodage.sql
 -- 3. Importer Contrat.csv dans la table contrat
--- 4. Exécuter les vérifications finales du fichier 02
+-- 4. Exécuter 03_verifications_import.sql
+-- 5. Exécuter 04_requetes_analyses.sql
 -- ============================================================

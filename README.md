@@ -5,8 +5,8 @@
 <h1 align="center">Home Insurance SQL Database Project</h1>
 
 <p align="center">
-  Relational database design, data integrity validation<br>
-  and SQL analysis for a home insurance dataset
+  Relational database design, geographic data normalization,<br>
+  integrity validation, and SQL analysis for a home insurance dataset
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 ## Overview
 
-This project focuses on designing, creating, populating, validating, and querying a relational database for a **home insurance dataset**.
+This project focuses on designing, creating, populating, normalizing, validating, and querying a relational database for a **home insurance dataset**.
 
 Its purpose is to transform two source files, `Contrat.csv` and `Region.csv`, into a structured MySQL database that connects insurance contracts to a geographic reference system.
 
@@ -30,7 +30,8 @@ The project covers the complete database workflow:
 - relational database modeling;
 - table creation with primary and foreign key constraints;
 - CSV data import through MySQL Workbench;
-- post-import data normalization;
+- correction of geographic labels affected by character-encoding issues;
+- insertion of missing geographic references;
 - row-count and referential-integrity validation;
 - SQL analyses answering business questions;
 - screenshots documenting each query and its result.
@@ -42,8 +43,9 @@ The project covers the complete database workflow:
 - Preserve geographic and postal codes in the correct format.
 - Enforce entity integrity through primary keys.
 - Enforce referential integrity between contracts and geographic data.
+- Correct corrupted French characters introduced during CSV import.
+- Add missing geographic references required by the contract data.
 - Validate imported row counts and detect possible orphan records.
-- Normalize inconsistent geographic labels after import.
 - Use SQL to answer insurance-related business questions.
 - Document the database model, implementation process, and analysis results.
 
@@ -60,12 +62,12 @@ The `region` table acts as the geographic reference table. Despite its name, it 
 
 ```mermaid
 flowchart LR
-    A[CSV source files] --> B[MySQL tables]
-    B --> C[Post-import normalization]
-    C --> D[Import checks]
-    D --> E[Referential integrity validation]
-    E --> F[SQL analyses]
-    F --> G[Result screenshots]
+    A[Create database] --> B[Import Region.csv]
+    B --> C[Normalize encoding and add missing references]
+    C --> D[Import Contrat.csv]
+    D --> E[Validate row counts and relationships]
+    E --> F[Run SQL analyses]
+    F --> G[Document results with screenshots]
 ```
 
 ## Final Relational Model
@@ -160,19 +162,21 @@ The `contrat` table contains contract, address, housing, coverage, and pricing i
 ## Technical Design Choices
 
 - **InnoDB** is used to support foreign keys and transactional integrity.
-- **`utf8mb4_unicode_ci`** preserves French characters and provides Unicode-compatible comparisons.
+- **`utf8mb4_unicode_ci`** provides Unicode-compatible storage, comparison, and sorting.
 - Geographic and postal codes use `VARCHAR` rather than numeric types so that leading zeros are retained.
 - `No_voie` uses `VARCHAR(10)` because street numbers may be missing or contain non-numeric information.
 - `Prix_cotisation_mensuel` uses `DECIMAL(10,2)` to store monetary values without floating-point approximation.
 - Tables are dropped in child-to-parent order and populated in parent-to-child order to respect the foreign key relationship.
+- Encoding normalization is isolated in a dedicated SQL script so that data correction remains separate from database creation, import validation, and business analysis.
 
 ## SQL Files
 
 | File | Purpose |
 |---|---|
 | `01_creation_bdd.sql` | Creates the database, the two tables, and their primary and foreign key constraints |
-| `02_verifications_import.sql` | Checks imported row counts, inserts the three missing La Réunion geographic references, normalizes regional labels, and validates referential integrity |
-| `03_requetes_analyses.sql` | Contains the 12 required business queries and 3 additional analyses |
+| `02_normalisation_encodage.sql` | Adds the three missing La Réunion geographic references, repairs corrupted French characters, and standardizes geographic labels |
+| `03_verifications_import.sql` | Checks final row counts, validates referential integrity, detects remaining encoding issues, and previews the imported data |
+| `04_requetes_analyses.sql` | Contains the 12 required business queries and 3 additional analyses |
 
 ## Database Creation and Import
 
@@ -188,19 +192,20 @@ COLLATE utf8mb4_unicode_ci;
 
 1. Execute `01_creation_bdd.sql` in MySQL Workbench.
 2. Import `Region.csv` into the `region` table.
-3. Execute sections 1 to 4 of `02_verifications_import.sql` to:
-   - verify the imported region row count;
+3. Execute `02_normalisation_encodage.sql` to:
+   - verify the initial region row count;
    - insert the three missing La Réunion geographic references;
-   - normalize the regional labels;
-   - verify the corrected geographic values.
+   - repair corrupted accented characters;
+   - standardize the La Réunion geographic values;
+   - confirm that no typical encoding artifacts remain.
 4. Import `Contrat.csv` into the `contrat` table.
-5. Execute sections 5 to 9 of `02_verifications_import.sql` to:
-   - verify the imported contract row count;
-   - validate the final row counts;
-   - verify referential integrity;
-   - check the La Réunion entries;
+5. Execute `03_verifications_import.sql` to:
+   - verify the final row counts;
+   - validate referential integrity;
+   - confirm the absence of orphan contracts;
+   - check that no corrupted geographic labels remain;
    - preview the imported data.
-6. Execute the 12 required queries and the 3 additional analyses from `03_requetes_analyses.sql`.
+6. Execute the 12 required queries and the 3 additional analyses from `04_requetes_analyses.sql`.
 
 This order is required because `region` is the parent table and `contrat` depends on it through a foreign key.
 
@@ -215,27 +220,39 @@ This order is required because `region` is the parent table and `contrat` depend
 
 These additional entries ensure that every contract foreign key already exists in the parent table before the contract data is imported.
 
-## Post-Import Data Normalization
+## Encoding and Geographic Normalization
 
-Several regional labels required normalization after import to ensure consistent grouping and readable results.
+Some geographic labels were imported with corrupted characters because UTF-8 text was interpreted with an incompatible character encoding.
 
-The verification script standardizes:
+Typical examples included values such as:
 
-- `Provence-Alpes-Côte d'Azur`;
-- `Auvergne-Rhône-Alpes`;
-- `Bourgogne-Franche-Comté`;
-- `La Réunion`.
+```text
+RhÃ´ne
+CrÃ©teil
+CÃ´te-d'Or
+Bourgogne-Franche-ComtÃ©
+```
 
-La Réunion is normalized with region code `4` so that its contracts are grouped on a single row in the regional analysis.
+The dedicated `02_normalisation_encodage.sql` script repairs the affected text fields in the `region` table:
+
+- `reg_nom`;
+- `aca_nom`;
+- `dep_nom`;
+- `com_nom_maj_court`;
+- `dep_nom_num`.
+
+It also standardizes La Réunion with region code `4` so that its contracts are grouped on a single row in regional analyses.
+
+A final control searches for typical encoding artifacts such as `Ã`, `Â`, and `�`. The expected result is **zero remaining rows**.
 
 ## Data Integrity Checks
 
 The primary key constraints enforce row uniqueness in both tables.
 
-The post-import validation queries check:
+The validation queries check:
 
-- the number of rows imported into each table;
-- the normalization of regional labels;
+- the final number of rows in each table;
+- the absence of remaining encoding artifacts;
 - the existence of every geographic reference used by a contract;
 - the absence of contracts without a matching row in `region`;
 - the consistency of the one-to-many relationship.
@@ -304,7 +321,7 @@ Each screenshot displays:
 - the result grid returned by MySQL Workbench;
 - the data used to answer the corresponding project question.
 
-The folder documents the successful execution of the **12 required queries** and the **3 additional analyses**.
+The folder documents the successful execution of the **12 required queries** and the **3 additional analyses** after geographic labels were normalized.
 
 ## Technologies Used
 
@@ -321,6 +338,7 @@ The folder documents the successful execution of the **12 required queries** and
 - SQL DDL and DML
 - Primary and foreign key management
 - CSV data import
+- Character-encoding diagnosis and correction
 - Post-import data normalization
 - Referential-integrity validation
 - Business-oriented SQL analysis
@@ -333,4 +351,4 @@ The folder documents the successful execution of the **12 required queries** and
 
 ---
 
-This project demonstrates the ability to transform source data into a reliable relational database, enforce data integrity, normalize imported values, and use SQL to produce clear business insights.
+This project demonstrates the ability to transform source data into a reliable relational database, diagnose and correct character-encoding issues, enforce data integrity, and use SQL to produce clear business insights.

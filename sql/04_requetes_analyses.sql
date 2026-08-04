@@ -1,6 +1,6 @@
 -- ============================================================
 -- Projet SQL - Assurance habitation
--- Fichier : 03_requetes_analyses.sql
+-- Fichier : 04_requetes_analyses.sql
 -- Objectif : requêtes d'analyse SQL demandées dans le projet
 -- SGBD : MySQL / MySQL Workbench
 -- ============================================================
@@ -14,7 +14,7 @@ USE oc_assurance_habitation;
 
 -- Requête 1 :
 -- Lister les numéros de contrats (Contrat_ID) avec leur surface
--- pour le code postal 92100.
+-- pour le code postal 92100
 
 SELECT
     Contrat_ID,
@@ -101,7 +101,7 @@ GROUP BY r.reg_nom, c.Formule;
 
 -- Requête 8 :
 -- Lister les numéros de contrats avec le type de contrat et leur formule
--- pour les maisons du département 71.
+-- pour les maisons du département 71
 
 SELECT
     c.Contrat_ID,
@@ -119,7 +119,7 @@ ORDER BY c.Contrat_ID;
 
 -- Requête 9 :
 -- Quelle est la surface moyenne des contrats à Paris ?
--- Paris est identifié par le code département 75.
+-- Paris est identifié par le code département 75
 
 SELECT
     r.dep_code,
@@ -133,7 +133,7 @@ GROUP BY r.dep_code, r.dep_nom;
 
 -- Requête 10 :
 -- Classement des 10 départements où le prix moyen de la cotisation
--- est le plus élevé.
+-- est le plus élevé
 
 SELECT
     r.dep_code,
@@ -148,7 +148,7 @@ ORDER BY prix_moyen_cotisation DESC
 LIMIT 10;
 
 -- Requête 11 :
--- Liste des communes ayant eu au moins 150 contrats.
+-- Liste des communes ayant eu au moins 150 contrats
 
 SELECT
     r.Code_dep_code_commune,
